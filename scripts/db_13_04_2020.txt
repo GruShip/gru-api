@@ -1,0 +1,56 @@
+INSERT INTO `accessmodule` (`id`, `active`, `created_date`, `removed`, `updated_date`, `code`, `desc`, `name`, `created_by`, `updated_by`)
+VALUES
+	(1, 1, '2020-04-10 06:01:43', 0, '2020-04-10 06:01:43', 'Company', 'Company', 'Company', NULL, NULL),
+	(2, 1, '2020-04-10 06:15:31', 0, '2020-04-10 06:18:16', 'CompanyBranch', 'CompanyBranch', 'CompanyBranch', NULL, NULL),
+	(3, 1, '2020-04-10 06:15:31', 0, '2020-04-10 06:18:16', 'User', 'User', 'User', NULL, NULL),
+	(4, 1, '2020-04-10 06:15:31', 0, '2020-04-10 06:18:16', 'UserGroup', 'UserGroup', 'UserGroup', NULL, NULL),
+	(5, 1, '2020-04-10 06:15:31', 0, '2020-04-10 06:18:16', 'UserBranchMapping', 'UserBranchMapping', 'UserBranchMapping', NULL, NULL),
+	(6, 1, '2020-04-10 06:15:31', 0, '2020-04-10 06:18:16', 'UserGroupMapping', 'UserBranchMapping', 'UserGroupMapping', NULL, NULL),
+	(7, 1, '2020-04-10 06:15:31', 0, '2020-04-10 06:18:16', 'UserGroupAccessMapping', 'UserGroupAccessMapping', 'UserGroupAccessMapping', NULL, NULL);
+
+INSERT INTO `company` (`id`, `active`, `created_date`, `removed`, `updated_date`, `code`, `desc`, `domain`, `email`, `name`, `phone_number_1`, `phone_number_2`, `taxcode`, `created_by`, `updated_by`, `primary_address_id`, `type`)
+VALUES
+	(1, 1, '2020-04-10 05:50:31', 0, '2020-04-24 16:00:20', NULL, 'Pinak MarketPlace. Master Entity.', 'abc.com', 'test@gmail.com', 'Pinak MarketPlace', '9292929292', '9292929292', NULL, NULL, NULL, 18, 'MARKETPLACE');	
+	
+INSERT INTO `user` (`id`, `active`, `created_date`, `removed`, `updated_date`, `email`, `first_name`, `is_system_admin`, `last_name`, `password`, `phone_number_1`, `phone_number_2`, `type`, `username`, `created_by`, `updated_by`, `company_id`, `primary_address_id`)
+VALUES
+	(2, 1, '2020-04-10 05:51:17', 0, '2020-04-10 05:51:17', 'systemadmin@mailinator.com', 'System', 1, 'Admin', 'Xf7sSKknYFkMh/v/s36TV8pYXVgTyI9dLASSvyeho/ESSvHYYmeI8EjofkbMXs7KbLg/Cmlujsrn2eWJbzR/Dg==', '9898989898', '9898989898', 'GENERAL', 'systemadmin', NULL, NULL, 1, NULL);
+
+	
+INSERT INTO `usergroup` (`id`, `active`, `created_date`, `removed`, `updated_date`, `code`, `desc`, `name`, `created_by`, `updated_by`, `company_id`)
+VALUES
+	(1, 1, '2020-04-27 19:23:16', 0, '2020-05-04 14:47:23', 'ADM', 'Admin UserGroup', 'Adming UserGroup', NULL, NULL, 1);
+
+INSERT INTO `usergroupmapping` (`id`, `active`, `created_date`, `removed`, `updated_date`, `created_by`, `updated_by`, `user_id`, `user_group_id`)
+VALUES
+	(NULL, 1, '2020-04-29 05:25:14', 0, '2020-04-29 06:56:02', NULL, NULL, 2, 1);
+
+
+INSERT INTO `usergroupaccessmapping` (`id`, `active`, `created_date`, `removed`, `updated_date`, `create_access`, `delete_access`, `read_access`, `update_access`, `created_by`, `updated_by`, `access_module_id`, `user_group_id`)
+VALUES
+	(2, 1, '2020-04-29 09:08:37', 0, '2020-04-29 09:09:10', 1, 1, 1, 1, NULL, NULL, 2, 1),
+	(3, 1, NULL, 0, '2020-05-04 02:26:45', 1, 1, 1, 1, NULL, NULL, 1, 1),
+	(4, 1, '2020-04-29 09:09:12', 0, '2020-05-01 04:18:56', 1, 1, 1, 1, NULL, NULL, 3, 1),
+	(5, 1, '2020-04-29 09:09:12', 0, '2020-05-01 04:18:56', 1, 1, 1, 1, NULL, NULL, 4, 1);
+
+
+
+	
+DELIMITER //
+ 
+CREATE PROCEDURE GetUserAccessBranchList(
+    IN user_id bigint
+)
+BEGIN
+ SET @tv:=(SELECT GROUP_CONCAT(cb.id SEPARATOR ',') FROM companybranch cb inner join userbranchmapping ubm on ubm.company_branch_id = cb.id where ubm.user_id = user_id and ubm.removed=0 and cb.removed=0);
+SELECT GROUP_CONCAT(lv SEPARATOR ',') FROM (
+SELECT @pv:=(SELECT GROUP_CONCAT(id SEPARATOR ',') FROM companybranch 
+WHERE FIND_IN_SET(parent_company_branch_id, @pv)) AS lv FROM companybranch 
+JOIN
+(SELECT @pv:=@tv) tmp
+UNION
+(SELECT @pv:=@tv ) 
+) a;
+END //
+ 
+DELIMITER ;
