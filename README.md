@@ -1,3 +1,1 @@
-# pinak-api
-
 # gru-api
